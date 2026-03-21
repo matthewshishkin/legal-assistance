@@ -1055,7 +1055,8 @@ blockquote {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
   margin-top: 48px;
-  align-items: stretch;
+  /* Карточки по высоте контента, без растягивания на всю строку */
+  align-items: start;
 }
 
 /* Вторая карточка скрыта, пока не прошла пауза после анимации первой (класс .tariff-second-visible — JS) */
@@ -1226,13 +1227,24 @@ blockquote {
   border: 1.5px solid #000;
   background: #000;
   color: #fff;
-  min-height: calc(100% + 64px);
-  /* те же поля, что у первой карточки — кнопки на одной линии снизу */
+  align-self: start;
+  min-height: auto;
+  height: fit-content;
+  /* те же поля, что у первой карточки */
   padding: 28px 24px;
   /* мягкая растушеванная тень снизу */
   box-shadow:
     0 22px 52px -6px rgba(0, 0, 0, 0.26),
     0 10px 28px -4px rgba(0, 0, 0, 0.16);
+}
+
+.tariff-card--filled .tariff-list {
+  flex: 0 1 auto;
+}
+
+/* Последний <li> в анимации с margin-bottom: 0; добавляем отступ как между пунктами — одинаково в обеих карточках */
+.pricing-section .tariff-card .tariff-list {
+  padding-bottom: 10px;
 }
 
 @media (min-width: 961px) {
@@ -1529,6 +1541,11 @@ blockquote {
   flex-shrink: 0;
 }
 
+/* «С нами»: без margin-top:auto — иначе при длинном списке кнопка визуально ближе к последнему пункту; зазор задаёт gap карточки + padding-bottom списка */
+.tariff-card--filled .tariff-btn {
+  margin-top: 0;
+}
+
 .tariff-btn--outline {
   background: #fff;
   color: #000;
@@ -1660,7 +1677,10 @@ blockquote {
 }
 .cta-sub        { color: var(--muted); margin-bottom: 104px; font-size: 0.97rem; }
 
-/* CTA: чёрная заливка, белый текст; при hover — заливка остаётся чёрной */
+/*
+  CTA: та же кнопка, что в 1-м блоке (.hero-btn) — padding, radius, шрифт 1:1;
+  отличие: чёрная заливка + тень; при hover заливка остаётся чёрной.
+*/
 .cta-section .hero-btn {
   position: static;
   transform: none;
@@ -1668,12 +1688,18 @@ blockquote {
   bottom: auto;
   margin-top: 96px;
   display: inline-block;
+  text-align: center;
+  border-radius: 3px;
+  padding: 16px 48px;
+  font-size: 1rem;
+  font-weight: 500;
+  white-space: nowrap;
   background: #000;
   color: #fff;
   border: 0.75px solid #000;
   box-shadow:
-    0 6px 20px rgba(0, 0, 0, 0.22),
-    0 2px 8px rgba(0, 0, 0, 0.12);
+    0 10px 32px rgba(0, 0, 0, 0.24),
+    0 4px 14px rgba(0, 0, 0, 0.16);
   transition:
     background 0.22s ease,
     color 0.22s ease,
@@ -1685,8 +1711,8 @@ blockquote {
   color: #fff;
   border-color: #000;
   box-shadow:
-    0 8px 28px rgba(0, 0, 0, 0.28),
-    0 3px 10px rgba(0, 0, 0, 0.18);
+    0 12px 36px rgba(0, 0, 0, 0.28),
+    0 5px 16px rgba(0, 0, 0, 0.18);
 }
 
 .cta-contacts {
@@ -1730,6 +1756,54 @@ blockquote {
   box-sizing: border-box;
   border: 0.75px solid #000;
   display: block;
+}
+
+/* CTA на десктопе: как блок 1 (hero) — по центру, на высоту экрана, белый фон; кнопка — без изменений (правила .cta-section .hero-btn выше) */
+@media (min-width: 961px) {
+  .cta-section {
+    padding: 0;
+    background: #fff;
+  }
+
+  .cta-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - var(--header-h));
+    padding-top: 80px;
+    padding-bottom: 100px;
+    box-sizing: border-box;
+  }
+
+  .cta-photo-col {
+    display: none;
+  }
+
+  .cta-content {
+    width: 100%;
+    max-width: 100%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .cta-content h2 {
+    margin-bottom: 36px;
+    color: #000;
+    font-size: clamp(1.02rem, 2.091vw, 2.652rem);
+    font-weight: 500;
+    width: 100%;
+  }
+
+  .cta-sub {
+    margin-bottom: 0;
+    max-width: min(65ch, 100%);
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+  }
 }
 
 /* =============================================
@@ -2601,6 +2675,14 @@ a.q-submit-btn {
   /* Hero */
   .hero-btn                { position: static; transform: none; display: block; width: 100%; text-align: center; padding: 16px 24px; box-sizing: border-box; margin-top: auto; }
 
+  .cta-section .hero-btn {
+    display: block;
+    width: 100%;
+    padding: 16px 24px;
+    box-sizing: border-box;
+    white-space: normal;
+  }
+
   /*
     Иначе align-items:center у .hero-content-wrap сжимает колонку по max-content —
     кнопка с width:100% считается от узкой ширины, длинный текст (KK) вылезает за рамку.
@@ -2659,6 +2741,17 @@ a.q-submit-btn {
     width: auto;
   }
 
+  /* CTA — не герой: без absolute */
+  .cta-section .hero-btn {
+    position: static;
+    transform: none;
+    left: auto;
+    bottom: auto;
+    display: inline-block;
+    width: auto;
+    padding: 16px 48px;
+    white-space: nowrap;
+  }
 }
 
 @media (max-width: 700px) {
@@ -2752,7 +2845,7 @@ a.q-submit-btn {
   }
   .cta-section .hero-btn {
     margin-top: 40px;
-    padding: 14px 22px;
+    padding: 16px 24px;
   }
   /* Секционные заголовки во всех блоках — как в 1-м блоке */
   .section-title { font-size: clamp(1.7rem, 7.14vw, 3.4rem); }
