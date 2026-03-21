@@ -741,23 +741,22 @@ function buildTelegramLeadMessage(form) {
   const phone = (fd.get('phone') || '').toString().trim();
   const city = (fd.get('city') || '').toString().trim();
 
-  const lines = [
-    '🔔 Новая заявка с сайта!',
-    '',
-    `👤 Имя: ${name}`,
-    `📞 Телефон: ${phone}`,
-    `📍 Город: ${city}`,
-    '',
-    '📋 Ответы на вопросы:',
-  ];
+  const contactBlock = `👤 Имя: ${name}\n📞 Телефон: ${phone}\n📍 Город: ${city}`;
 
+  const qaLines = [];
   for (let s = 1; s <= TOTAL_STEPS; s++) {
     const qTitle = getQuizStepQuestionTitle(s);
     const ans = formatQuizAnswerForStep(s);
-    lines.push(`${qTitle}: ${ans}`);
+    qaLines.push(`${qTitle}: ${ans}`);
   }
+  const answersBlock = qaLines.join('\n\n');
 
-  return lines.join('\n');
+  return (
+    `🔔 Новая заявка с сайта!\n\n` +
+    `${contactBlock}\n\n` +
+    `📋 Ответы на вопросы:\n\n` +
+    answersBlock
+  );
 }
 
 /**
