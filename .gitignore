@@ -1,2 +1,5 @@
-*.psd
+build/
+dist/
 .DS_Store
+Фото креативы/
+*.psd
