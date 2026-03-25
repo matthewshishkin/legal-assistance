@@ -360,7 +360,7 @@ h3 { font-weight: normal; font-size: 1.05rem; }
 
 .law-cards {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 24px;
   margin-top: 86px;
 }
@@ -384,8 +384,12 @@ h3 { font-weight: normal; font-size: 1.05rem; }
 /* Десктоп: фиксированный размер карточек (без изменения при клике) */
 @media (min-width: 961px) {
   .law-card {
-    height: 420px;
+    height: 380px;
+    padding: 24px 18px;
   }
+  .law-freq { font-size: 1.45rem; }
+  .law-card p { font-size: 1.35rem; line-height: 1.5; }
+  .law-card-title { font-size: 1.2em; }
 }
 .law-card.animate-in {
   opacity: 1;
