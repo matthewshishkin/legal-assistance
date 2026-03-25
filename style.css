@@ -383,6 +383,15 @@ h3 { font-weight: normal; font-size: 1.05rem; }
 
 /* Десктоп: фиксированный размер карточек (без изменения при клике) */
 @media (min-width: 961px) {
+  /* Make 5 cards less cramped on desktop only */
+  .law-section > .container {
+    max-width: 1380px;
+  }
+
+  .law-cards {
+    gap: 18px;
+  }
+
   .law-card {
     height: 380px;
     padding: 24px 18px;
