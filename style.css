@@ -199,12 +199,8 @@ h3 { font-weight: normal; font-size: 1.05rem; }
 
 @media (max-width: 700px) {
   .header-logo {
-    font-size: 0.78rem;
+    font-size: 0.66rem;
     gap: 6px;
-  }
-  .header-logo-img{
-    height: 0.9em;
-    width: 0.9em;
   }
 }
 .btn-header {
