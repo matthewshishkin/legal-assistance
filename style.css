@@ -2166,23 +2166,9 @@ blockquote {
   border-radius: 999px; /* при 100% делаем полностью округлую "таблетку" */
 }
 
-/* Делим линию на 5 сегментов (20% каждый) */
+/* Без сегментных разделителей на прогресс-баре */
 .quiz-progress-track::before{
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  /* Тонкие разделители на границах сегментов */
-  background: repeating-linear-gradient(
-    to right,
-    rgba(0,0,0,0) 0%,
-    rgba(0,0,0,0) 19%,
-    rgba(0,0,0,0.22) 19%,
-    rgba(0,0,0,0.22) 20%,
-    rgba(0,0,0,0) 20%,
-    rgba(0,0,0,0) 100%
-  );
+  content: none;
 }
 .stepper-step {
   display: flex;
