@@ -8,8 +8,8 @@
   <link rel="preload" href="logo-header-mask.jpg" as="image" />
   <!-- Тот же шрифт, что у заголовка hero — без смены начертания на экране загрузки -->
   <link rel="preload" href="PlayfairDisplay-Regular.e3c63bea.otf" as="font" type="font/otf" crossorigin />
-  <!-- Ранний старт загрузки фона 1-го экрана (быстрее к autoplay) -->
-  <link rel="preload" href="hero27.mp4" as="video" type="video/mp4" />
+  <!-- Ранний старт загрузки фона 1-го экрана -->
+  <link rel="preload" href="cr1.jpg" as="image" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet" />
@@ -42,10 +42,8 @@
   <!-- ║        БЛОК 1: HERO          ║ -->
   <!-- ╚══════════════════════════════╝ -->
   <section class="hero hero--video" id="hero">
-    <!-- Фоновое видео -->
-    <video class="hero-video" autoplay muted loop playsinline preload="auto">
-      <source src="hero27.mp4" type="video/mp4" />
-    </video>
+    <!-- Фоновое изображение (вместо видео) -->
+    <img class="hero-video" src="cr1.jpg" alt="" aria-hidden="true" />
     <!-- Тёмный оверлей + шум -->
     <div class="hero-overlay"></div>
     <!-- Контент -->
