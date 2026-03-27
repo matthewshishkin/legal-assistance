@@ -30,8 +30,13 @@ if (!is_array($data) || empty($data['text']) || !is_string($data['text'])) {
   exit;
 }
 
-$token = '8633244693:AAFYxNx52ZqGvUq2irDoWa4_-9JWiqSW1X4';
-$chat_id = '611386647';
+$token = getenv('TELEGRAM_BOT_TOKEN');
+$chat_id = getenv('TELEGRAM_CHAT_ID');
+if (!$token || !$chat_id) {
+  http_response_code(500);
+  echo json_encode(['ok' => false, 'error' => 'Server not configured']);
+  exit;
+}
 $url = "https://api.telegram.org/bot{$token}/sendMessage";
 
 $payload = json_encode([

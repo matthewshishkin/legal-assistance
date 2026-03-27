@@ -2,8 +2,8 @@
  * Vercel Serverless (Node): прокси к Telegram Bot API.
  * Должен открываться: GET https://mainur.vercel.app/api/send-telegram
  */
-const TELEGRAM_BOT_TOKEN = '8633244693:AAFYxNx52ZqGvUq2irDoWa4_-9JWiqSW1X4';
-const TELEGRAM_CHAT_ID = '5110401504';
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
 function readJsonBody(req) {
   return new Promise((resolve, reject) => {
@@ -38,6 +38,13 @@ async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS, GET');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
+    return res.status(500).json({
+      ok: false,
+      error: 'Server not configured: set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID env vars',
+    });
+  }
 
   if (req.method === 'OPTIONS') {
     return res.status(204).end();

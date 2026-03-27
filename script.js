@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const items = Array.from(document.querySelectorAll('.stats-showcase-item'));
   if (!section || !items.length) return;
 
-  const DEFAULT_DURATION_MS = 1100; /* быстрая анимация; для отдельных — data-duration (напр. 780 млн = 3500) */
+  const DEFAULT_DURATION_MS = 1000; /* медленнее для остальных чисел; отдельные data-duration сохраняются */
 
   const animateCounter = (el) => new Promise((resolve) => {
     if (!el || el.dataset.countDone === '1') {
@@ -315,10 +315,11 @@ document.addEventListener('DOMContentLoaded', () => {
     el.dataset.countDone = '1';
 
     const target = Number(el.dataset.target || 0);
+    const prefix = el.dataset.prefix || '';
     const suffix = el.dataset.suffix || '';
     const customMs = Number(el.dataset.duration);
     const duration =
-      Number.isFinite(customMs) && customMs > 0 ? customMs : DEFAULT_DURATION_MS;
+      Number.isFinite(customMs) && customMs > 0 ? Math.max(1, customMs / 2) : DEFAULT_DURATION_MS;
     const start = performance.now();
 
     const tick = (now) => {
@@ -326,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Ускорение по мере роста числа
       const eased = 1 - Math.pow(1 - t, 2.35);
       const val = Math.round(target * eased);
-      el.textContent = `${val}${suffix}`;
+      el.textContent = `${prefix}${val}${suffix}`;
       if (t < 1) {
         requestAnimationFrame(tick);
       } else {
@@ -389,7 +390,7 @@ function updateHeaderGlassProgress() {
 }
 
 /**
- * После полного прохолжения 2-го блока (.law-section) кнопка в шапке — белая с чёрным текстом.
+ * После полного прохолжения 2-го блока (.law-section) кнопка в шапке — бордовая с белым текстом.
  * Класс не снимается при возврате к 1-му блоку; после перезагрузки страницы снова стандартный вид.
  */
 function updateHeaderCtaAfterSecondBlock() {
@@ -778,11 +779,11 @@ window.addEventListener('pageshow', updateHeaderCtaAfterSecondBlock);
    QUIZ MODAL
    ============================================= */
 let currentStep = 1;
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 const answers = {};
 let lastProgressPercent = 0;
 
-/** Черновик квиза (шаги 1–5, форма) — для возврата с legal-страниц в новой вкладке */
+/** Черновик квиза (шаги 1–6, форма) — для возврата с legal-страниц в новой вкладке */
 const QUIZ_DRAFT_KEY = 'mainur_quiz_draft_v1';
 const QUIZ_DRAFT_MAX_AGE_MS = 1000 * 60 * 60 * 24; // 24 ч
 
@@ -809,8 +810,6 @@ function quizSerializeContactForm() {
     name: (fd.get('name') || '').toString(),
     phone: (fd.get('phone') || '').toString(),
     city: (fd.get('city') || '').toString(),
-    _consent_pd: !!form.querySelector('[name="consent_pd"]')?.checked,
-    _consent_privacy: !!form.querySelector('[name="consent_privacy"]')?.checked,
   };
 }
 
@@ -845,9 +844,20 @@ function quizApplySelectedFromAnswers() {
     else if (raw !== undefined && raw !== null) sel = String(raw) === String(val);
     btn.classList.toggle('selected', !!sel);
   });
+  const q1Other = document.getElementById('q1OtherWrap');
+  const q1Inp = document.getElementById('q1OtherInput');
+  if (answers[1] === 'other' && q1Other && q1Inp) {
+    q1Other.classList.remove('q-other-field--hidden');
+    q1Inp.value = answers['1_other'] || '';
+    q1Inp.classList.remove('q-other-input--invalid');
+  } else if (q1Other && q1Inp) {
+    q1Other.classList.add('q-other-field--hidden');
+    q1Inp.value = '';
+    q1Inp.classList.remove('q-other-input--invalid');
+  }
 }
 
-/** Восстанавливает ответы и поля формы из localStorage. Не меняет видимый шаг — вызывайте showStep(5) после. */
+/** Восстанавливает ответы и поля формы из localStorage. Не меняет видимый шаг — вызывайте showStep(6) после. */
 function quizApplyDraft() {
   try {
     const raw = localStorage.getItem(QUIZ_DRAFT_KEY);
@@ -873,17 +883,26 @@ function quizApplyDraft() {
       const nameEl = form.querySelector('[name="name"]');
       const phoneEl = form.querySelector('[name="phone"]');
       const cityEl = form.querySelector('[name="city"]');
-      const c1 = form.querySelector('[name="consent_pd"]');
-      const c2 = form.querySelector('[name="consent_privacy"]');
       if (nameEl && f.name != null) nameEl.value = f.name;
       if (phoneEl && f.phone != null) phoneEl.value = f.phone;
       if (cityEl && f.city != null) cityEl.value = f.city;
-      if (c1 && typeof f._consent_pd === 'boolean') c1.checked = f._consent_pd;
-      if (c2 && typeof f._consent_privacy === 'boolean') c2.checked = f._consent_privacy;
     }
     return true;
   } catch (_) {
     return false;
+  }
+}
+
+function quizGetDraftStep() {
+  try {
+    const raw = localStorage.getItem(QUIZ_DRAFT_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    const st = Number(data && data.currentStep);
+    if (!Number.isFinite(st) || st < 1 || st > TOTAL_STEPS + 1) return null;
+    return st;
+  } catch (_) {
+    return null;
   }
 }
 
@@ -892,17 +911,17 @@ function resetQuizToEmptyContactStep() {
   document.querySelectorAll('.q-opt.selected').forEach((b) => b.classList.remove('selected'));
   const form = document.querySelector('.q-contact-form');
   if (form) form.reset();
-  document.querySelectorAll('.q-consent input[type="checkbox"]').forEach((c) => {
-    c.checked = false;
-  });
-  document.querySelectorAll('.q-consent').forEach((l) => l.classList.remove('quiz-consent-invalid'));
+  const q1Other = document.getElementById('q1OtherWrap');
+  const q1Inp = document.getElementById('q1OtherInput');
+  if (q1Other) q1Other.classList.add('q-other-field--hidden');
+  if (q1Inp) {
+    q1Inp.value = '';
+    q1Inp.classList.remove('q-other-input--invalid');
+  }
 }
 
-/** Ссылка на WhatsApp — кнопка «Связаться вне очереди» после шага «Отлично!…» */
-const WHATSAPP_QUIZ_PHONE = '77077705005';
-const WHATSAPP_QUIZ_TEXT =
-  'Добрый день! Пишу вам с сайта. Мне было бы удобнее прямо сейчас созвониться, потому что через 1 час я уже буду занят(а). Подскажите, юрист на связи в данный момент?';
-const WHATSAPP_QUIZ_URL = `https://wa.me/${WHATSAPP_QUIZ_PHONE}?text=${encodeURIComponent(WHATSAPP_QUIZ_TEXT)}`;
+/** Ссылка на WhatsApp (LinkTwin) — кнопка «Связаться вне очереди» после шага «Отлично!…» */
+const WHATSAPP_QUIZ_URL = 'https://linktw.in/ocjIoY';
 
 /** Прокси на Vercel (без CORS): POST JSON { text } → пересылает в Telegram */
 const TELEGRAM_PROXY_URL = 'https://mainur.vercel.app/api/send-telegram';
@@ -928,6 +947,12 @@ function formatQuizAnswerForStep(step) {
   if (Array.isArray(raw)) {
     if (raw.length === 0) return '—';
     return raw.map((v) => getQuizOptionLabel(step, v)).join(', ');
+  }
+  if (step === 1 && raw === 'other') {
+    const detail = (answers['1_other'] || document.getElementById('q1OtherInput')?.value || '').trim();
+    const kk = typeof window !== 'undefined' && window.SiteI18n && window.SiteI18n.getLang() === 'kk';
+    if (detail) return kk ? `Басқа: ${detail}` : `Другое: ${detail}`;
+    return kk ? 'Басқа (көрсетілмеген)' : 'Другое (не указано)';
   }
   return getQuizOptionLabel(step, raw);
 }
@@ -975,8 +1000,174 @@ async function sendQuizLeadToTelegram(form) {
   return true;
 }
 
+/* =============================================
+   QUIZ — priority timer (03:00 → 00:00)
+   - starts when quiz opens
+   - pauses when quiz closes (keeps remaining)
+   - resets on page reload (no persistence)
+   - first minute is accelerated: 03:00 → 02:00 in 30s real time
+   ============================================= */
+let quizPriorityRemainingMs = 3 * 60 * 1000; // 03:00
+let quizPriorityLastTs = 0;
+let quizPriorityRaf = null;
+let quizPriorityExpired = false;
+const QUIZ_PRIORITY_STATE_KEY = 'mainur_quiz_priority_state_v1';
+
+function getNavType() {
+  try {
+    const nav = performance.getEntriesByType && performance.getEntriesByType('navigation');
+    const entry = nav && nav[0];
+    return (entry && entry.type) || 'navigate';
+  } catch (_) {
+    return 'navigate';
+  }
+}
+
+function quizPriorityPersist() {
+  try {
+    const modal = document.getElementById('quizModal');
+    if (!modal || !modal.classList.contains('open')) return;
+    const payload = {
+      remainingMs: Math.max(0, Math.round(quizPriorityRemainingMs)),
+      expired: !!quizPriorityExpired,
+      t: Date.now(),
+    };
+    localStorage.setItem(QUIZ_PRIORITY_STATE_KEY, JSON.stringify(payload));
+  } catch (_) {}
+}
+
+function quizPriorityRestoreIfNeeded() {
+  try {
+    // По ТЗ раньше таймер сбрасывался при reload. Сохраняем это поведение:
+    // при обычном обновлении страницы игнорируем сохранённое состояние.
+    if (getNavType() === 'reload') {
+      localStorage.removeItem(QUIZ_PRIORITY_STATE_KEY);
+      return false;
+    }
+
+    const raw = localStorage.getItem(QUIZ_PRIORITY_STATE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    const ms = Number(data && data.remainingMs);
+    if (!Number.isFinite(ms) || ms < 0 || ms > 3 * 60 * 1000) return false;
+    quizPriorityRemainingMs = ms;
+    quizPriorityExpired = !!(data && data.expired);
+    quizPriorityLastTs = 0;
+    quizPriorityRender();
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
+function formatMmSs(ms) {
+  const totalSec = Math.max(0, Math.ceil(ms / 1000));
+  const mm = Math.floor(totalSec / 60);
+  const ss = totalSec % 60;
+  return `${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+}
+
+function quizPriorityRender() {
+  const labelHtml = (window.SiteI18n && window.SiteI18n.STRINGS)
+    ? ((() => {
+        const lang = window.SiteI18n.getLang ? window.SiteI18n.getLang() : 'ru';
+        const dict = (window.SiteI18n.STRINGS && window.SiteI18n.STRINGS[lang]) || window.SiteI18n.STRINGS.ru || {};
+        return quizPriorityExpired
+          ? (dict.q_timer_expired || 'Приоритет вашей заявке недоступен.<br>Ваша заявка будет обработа в порядке очереди')
+          : (dict.q_timer_label || 'Сгорает: приоритет вашей заявке');
+      })())
+    : (quizPriorityExpired
+        ? 'Приоритет вашей заявке недоступен.<br>Ваша заявка будет обработа в порядке очереди'
+        : 'Сгорает: приоритет вашей заявке');
+  const time = quizPriorityExpired ? '00:00' : formatMmSs(quizPriorityRemainingMs);
+
+  document.querySelectorAll('.q-timer').forEach((wrap) => {
+    wrap.classList.toggle('is-expired', quizPriorityExpired);
+  });
+
+  document.querySelectorAll('.js-q-timer-label').forEach((el) => {
+    el.innerHTML = labelHtml;
+  });
+  document.querySelectorAll('.js-q-timer-time').forEach((el) => {
+    el.textContent = time;
+  });
+}
+
+function quizPriorityStep(now) {
+  if (quizPriorityExpired) return;
+
+  if (!quizPriorityLastTs) quizPriorityLastTs = now;
+  let dt = now - quizPriorityLastTs;
+  quizPriorityLastTs = now;
+  if (!Number.isFinite(dt) || dt < 0) dt = 0;
+
+  // Accelerated zone: only while remaining > 02:00
+  const THRESHOLD_MS = 2 * 60 * 1000; // 02:00
+  if (quizPriorityRemainingMs > THRESHOLD_MS) {
+    const toThresholdDisplay = quizPriorityRemainingMs - THRESHOLD_MS;
+    const toThresholdReal = toThresholdDisplay / 2; // 2× speed
+    if (dt <= toThresholdReal) {
+      quizPriorityRemainingMs -= dt * 2;
+      dt = 0;
+    } else {
+      quizPriorityRemainingMs = THRESHOLD_MS;
+      dt -= toThresholdReal;
+    }
+  }
+
+  // Normal zone
+  if (dt > 0) {
+    quizPriorityRemainingMs -= dt;
+  }
+
+  if (quizPriorityRemainingMs <= 0) {
+    quizPriorityRemainingMs = 0;
+    quizPriorityExpired = true;
+  }
+
+  quizPriorityRender();
+}
+
+function quizPriorityStart() {
+  const modal = document.getElementById('quizModal');
+  if (!modal || !modal.classList.contains('open')) return;
+  if (quizPriorityRaf != null) return; // already running
+
+  // Если вернулись со страницы политики — восстановить значение, если оно сохранено.
+  quizPriorityRestoreIfNeeded();
+  quizPriorityLastTs = 0;
+  quizPriorityRender();
+
+  const loop = (now) => {
+    const m = document.getElementById('quizModal');
+    if (!m || !m.classList.contains('open')) {
+      quizPriorityRaf = null;
+      quizPriorityLastTs = 0;
+      return;
+    }
+    quizPriorityStep(now);
+    if (!quizPriorityExpired) {
+      quizPriorityRaf = requestAnimationFrame(loop);
+    } else {
+      quizPriorityRaf = null;
+      quizPriorityLastTs = 0;
+    }
+  };
+
+  quizPriorityRaf = requestAnimationFrame(loop);
+}
+
+function quizPriorityStop() {
+  if (quizPriorityRaf != null) {
+    cancelAnimationFrame(quizPriorityRaf);
+    quizPriorityRaf = null;
+  }
+  quizPriorityLastTs = 0;
+  quizPriorityPersist();
+  quizPriorityRender();
+}
+
 function openModal() {
-  quizClearDraft();
   // Компенсируем ширину скроллбара, чтобы страница не прыгала
   const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
   document.body.style.paddingRight = scrollbarWidth + 'px';
@@ -984,32 +1175,46 @@ function openModal() {
   document.body.style.overflow = 'hidden';
 
   document.getElementById('quizModal').classList.add('open');
+  quizPriorityStart();
   // Сразу показываем квиз
   document.getElementById('quizFormScreen').classList.remove('hidden');
   document.getElementById('quizSuccess').classList.add('hidden');
   const qc = document.querySelector('.quiz-modal .quiz-container');
   if (qc) qc.scrollTop = 0;
-  // Сбрасываем квиз
-  currentStep = 1;
+
+  // Если есть черновик (например, пользователь закрыл квиз / переключил язык),
+  // продолжаем с текущего шага. Иначе — начинаем с начала.
   lastProgressPercent = 0;
-  showStep(1);
-  Object.keys(answers).forEach((k) => delete answers[k]);
-  document.querySelectorAll('.q-opt.selected').forEach(b => b.classList.remove('selected'));
-  document.querySelectorAll('.q-consent input[type="checkbox"]').forEach(c => {
-    c.checked = false;
-  });
-  document.querySelectorAll('.q-consent').forEach(l => l.classList.remove('quiz-consent-invalid'));
+  const restored = quizApplyDraft();
+  const draftStep = restored ? quizGetDraftStep() : null;
+  if (restored && draftStep) {
+    currentStep = draftStep;
+    showStep(draftStep);
+  } else {
+    currentStep = 1;
+    showStep(1);
+    Object.keys(answers).forEach((k) => delete answers[k]);
+    document.querySelectorAll('.q-opt.selected').forEach(b => b.classList.remove('selected'));
+    const q1Other = document.getElementById('q1OtherWrap');
+    const q1Inp = document.getElementById('q1OtherInput');
+    if (q1Other) q1Other.classList.add('q-other-field--hidden');
+    if (q1Inp) {
+      q1Inp.value = '';
+      q1Inp.classList.remove('q-other-input--invalid');
+    }
+  }
 }
 
 function closeModal() {
   document.getElementById('quizModal').classList.remove('open');
+  quizPriorityStop();
   document.body.style.overflow = '';
   document.body.style.paddingRight = '';
   document.getElementById('siteHeader').style.paddingRight = '';
 }
 
 /**
- * Открыть квиз на шаге контактов.
+ * Открыть квиз на шаге контактов (шаг 6).
  * @param {Event|null} e
  * @param {{ fromLegal?: boolean }} [options] — с legal-страниц: восстановить черновик из localStorage
  */
@@ -1025,6 +1230,7 @@ function openQuizContact(e, options) {
   document.body.style.overflow = 'hidden';
 
   document.getElementById('quizModal').classList.add('open');
+  quizPriorityStart();
   document.getElementById('quizFormScreen').classList.remove('hidden');
   document.getElementById('quizSuccess').classList.add('hidden');
   const qc2 = document.querySelector('.quiz-modal .quiz-container');
@@ -1038,14 +1244,13 @@ function openQuizContact(e, options) {
   } else {
     const restored = quizApplyDraft();
     if (!restored) resetQuizToEmptyContactStep();
-    document.querySelectorAll('.q-consent').forEach((l) => l.classList.remove('quiz-consent-invalid'));
   }
 
-  currentStep = 5;
-  showStep(5);
+  currentStep = 6;
+  showStep(6);
 
   setTimeout(() => {
-    const nameInput = document.querySelector('#step5 input[name="name"]');
+    const nameInput = document.querySelector('#step6 input[name="name"]');
     if (nameInput) nameInput.focus();
   }, 60);
 }
@@ -1059,7 +1264,7 @@ function showStep(n) {
 }
 
 function updateProgress(step) {
-  // Прогресс: 4 вопроса + контакт = 5 частей (20/40/60/80/99% — на шаге контактов не 100%, а 99%)
+  // Прогресс: 5 вопросов + контакт = 6 частей (до контактов равные части, на контактах 99%)
   const percent = step <= TOTAL_STEPS ? step * (100 / (TOTAL_STEPS + 1)) : 99;
   const p = Math.round(percent);
   const textEl = document.getElementById('quizProgressText');
@@ -1092,7 +1297,22 @@ function updateProgress(step) {
 
 function nextStep() {
   if (currentStep <= TOTAL_STEPS) {
-    // На шагах 1–4 нельзя переходить без выбора ответа.
+    // Шаг 1 «Другое»: нужен непустой ввод (без автоперехода по клику на карточку)
+    if (currentStep === 1 && answers[1] === 'other') {
+      const inp = document.getElementById('q1OtherInput');
+      const t = inp && inp.value.trim();
+      if (!t) {
+        if (inp) {
+          inp.classList.add('q-other-input--invalid');
+          inp.focus();
+        }
+        return;
+      }
+      answers['1_other'] = t;
+      if (inp) inp.classList.remove('q-other-input--invalid');
+    }
+
+    // На шагах 1–5 нельзя переходить без выбора ответа.
     if (currentStep >= 1 && currentStep <= TOTAL_STEPS) {
       const stepOpts = document.querySelectorAll(`.q-opt[data-step="${currentStep}"]`);
       const anySelected = Array.from(stepOpts).some(opt => opt.classList.contains('selected'));
@@ -1162,27 +1382,6 @@ function validateQuizContactForm(form) {
     return false;
   }
 
-  const consentPd = form.querySelector('input[name="consent_pd"]');
-  const consentPrivacy = form.querySelector('input[name="consent_privacy"]');
-  form.querySelectorAll('.q-consent').forEach(l => l.classList.remove('quiz-consent-invalid'));
-  if (!consentPd || !consentPrivacy || !consentPd.checked || !consentPrivacy.checked) {
-    if (consentPd && !consentPd.checked) {
-      const lab = consentPd.closest('.q-consent');
-      if (lab) {
-        void lab.offsetWidth;
-        lab.classList.add('quiz-consent-invalid');
-      }
-    }
-    if (consentPrivacy && !consentPrivacy.checked) {
-      const lab = consentPrivacy.closest('.q-consent');
-      if (lab) {
-        void lab.offsetWidth;
-        lab.classList.add('quiz-consent-invalid');
-      }
-    }
-    return false;
-  }
-
   return true;
 }
 
@@ -1194,6 +1393,11 @@ function submitQuizLastStep(e) {
 }
 
 /** Экран «Заявка принята!» — сразу после шага с контактами (внутри модалки квиза) */
+function redirectToThankYouPage() {
+  const isKk = typeof window !== 'undefined' && window.SiteI18n && window.SiteI18n.getLang() === 'kk';
+  window.location.href = isKk ? 'thank-you-kk.html' : 'thank-you.html';
+}
+
 function showQuizSuccessScreen() {
   const formScreen = document.getElementById('quizFormScreen');
   const successEl = document.getElementById('quizSuccess');
@@ -1224,7 +1428,7 @@ async function onQuizWhatsAppCtaClick(e) {
   try {
     await sendQuizLeadToTelegram(form);
     quizClearDraft();
-    showQuizSuccessScreen();
+    redirectToThankYouPage();
   } catch (err) {
     console.error(err);
     alert('Заявка отправлена, мы свяжемся с вами!');
@@ -1239,6 +1443,33 @@ async function onQuizWhatsAppCtaClick(e) {
 // Close on Escape
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
+// Уход со страницы (например, переход в политику) — сохранить оставшееся время.
+window.addEventListener('pagehide', () => {
+  quizPriorityPersist();
+});
+
+// При переключении языка (RU/KZ) не сбрасываем прогресс квиза:
+// оставляем пользователя на том же шаге и с теми же данными.
+window.addEventListener('siteLangChange', () => {
+  const modal = document.getElementById('quizModal');
+  if (!modal || !modal.classList.contains('open')) return;
+
+  // Сохраняем текущее состояние, т.к. apply(lang) меняет тексты в DOM.
+  quizSaveDraft();
+
+  const draftStep = quizGetDraftStep();
+  const stepToShow = draftStep || currentStep || 1;
+
+  // Восстанавливаем selected + инпуты формы (если есть черновик),
+  // затем показываем текущий шаг.
+  quizApplyDraft();
+  currentStep = stepToShow;
+  showStep(stepToShow);
+
+  // Перерисовать подпись таймера в новом языке (и expired-текст).
+  quizPriorityRender();
+});
+
 // ── Option buttons logic ──
 document.addEventListener('DOMContentLoaded', () => {
   const waQuizBtn = document.querySelector('.quiz-whatsapp-btn');
@@ -1247,25 +1478,49 @@ document.addEventListener('DOMContentLoaded', () => {
   const waCta = document.getElementById('quizWhatsAppCta');
   if (waCta) waCta.addEventListener('click', onQuizWhatsAppCtaClick);
 
-  document.querySelectorAll('.q-consent input[type="checkbox"]').forEach(cb => {
-    cb.addEventListener('change', () => {
-      const lab = cb.closest('.q-consent');
-      if (lab) lab.classList.remove('quiz-consent-invalid');
-    });
-  });
-
-  // Single-choice: auto-advance
+  // Single-choice: auto-advance (кроме шага 1 «Другое…» — нужен ввод и «Далее»)
   document.querySelectorAll('.q-opt.single').forEach(btn => {
     btn.addEventListener('click', () => {
       const step = btn.dataset.step;
+      const val = btn.dataset.val;
       document.querySelectorAll(`.q-opt.single[data-step="${step}"]`)
         .forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
-      answers[step] = btn.dataset.val;
+      answers[step] = val;
+      if (step === '1') {
+        const wrap = document.getElementById('q1OtherWrap');
+        const inp = document.getElementById('q1OtherInput');
+        if (val === 'other') {
+          if (wrap) wrap.classList.remove('q-other-field--hidden');
+          delete answers['1_other'];
+          if (inp) {
+            inp.classList.remove('q-other-input--invalid');
+            setTimeout(() => inp.focus(), 0);
+          }
+          quizSaveDraft();
+          return;
+        }
+        if (wrap) wrap.classList.add('q-other-field--hidden');
+        if (inp) {
+          inp.value = '';
+          inp.classList.remove('q-other-input--invalid');
+        }
+        delete answers['1_other'];
+      }
       quizSaveDraft();
       setTimeout(nextStep, 300);
     });
   });
+
+  const q1OtherInput = document.getElementById('q1OtherInput');
+  if (q1OtherInput) {
+    q1OtherInput.addEventListener('input', () => {
+      if (answers[1] === 'other') {
+        answers['1_other'] = q1OtherInput.value.trim();
+        quizSaveDraft();
+      }
+    });
+  }
 
   // Multi-choice: toggle
   document.querySelectorAll('.q-opt.multi').forEach(btn => {
@@ -1316,7 +1571,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     quizModalEl.addEventListener('change', () => quizSaveDraft());
     quizModalEl.addEventListener('click', (ev) => {
-      if (ev.target.closest('a.q-doc-link')) quizSaveDraft();
+      if (ev.target.closest('a.q-doc-link')) {
+        quizSaveDraft();
+        quizPriorityPersist(); // зафиксировать таймер перед уходом на политику
+      }
     });
   }
 
@@ -1346,6 +1604,24 @@ document.addEventListener('DOMContentLoaded', () => {
   }, { threshold: 0.18, rootMargin: '0px 0px -40px 0px' });
 
   lawCards.forEach(card => observer.observe(card));
+
+  /* =============================================
+     SCROLL ANIMATIONS — Risk cards (same behavior, separate observer)
+     ============================================= */
+  const riskCards = document.querySelectorAll('.risk-card');
+  if (riskCards.length) {
+    const riskObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const delay = parseInt(entry.target.dataset.delay || 0);
+          setTimeout(() => entry.target.classList.add('animate-in'), delay);
+          riskObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.18, rootMargin: '0px 0px -40px 0px' });
+
+    riskCards.forEach(card => riskObserver.observe(card));
+  }
 
   /* =============================================
      Telegram spoiler (canvas particles)
@@ -1827,103 +2103,3 @@ function initMarquee() {
   // На случай догрузки картинок (scrollWidth может поменяться)
   window.setTimeout(updateHalfWidth, 600);
 }
-
-/* =============================================
-   PRICING — блок в зоне видимости → 1-я карточка;
-   2-я («С нами») — через 3 с после старта анимации первой карточки
-   ============================================= */
-document.addEventListener('DOMContentLoaded', () => {
-  const grid = document.querySelector('.pricing-section .tariff-grid');
-  if (!grid) return;
-
-  const mqMobile = window.matchMedia('(max-width: 700px)');
-  const mqReduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-  /** Пауза перед показом второй карточки (мс) */
-  const SECOND_CARD_SHOW_DELAY_MS = 3000;
-
-  let tariffObserver = null;
-  let secondCardTimer = null;
-
-  function disconnectTariffObserver() {
-    if (tariffObserver) {
-      tariffObserver.disconnect();
-      tariffObserver = null;
-    }
-  }
-
-  function clearSecondCardTimer() {
-    if (secondCardTimer != null) {
-      window.clearTimeout(secondCardTimer);
-      secondCardTimer = null;
-    }
-  }
-
-  function setupTariffInView() {
-    disconnectTariffObserver();
-    clearSecondCardTimer();
-    grid.classList.remove(
-      'tariff-animate-ready',
-      'tariff-filled-animate-ready',
-      'tariff-second-visible'
-    );
-
-    if (mqReduce.matches) {
-      grid.classList.add(
-        'tariff-animate-ready',
-        'tariff-filled-animate-ready',
-        'tariff-second-visible'
-      );
-      return;
-    }
-
-    /* Мобила: без задержек и без анимаций (отключение в CSS) */
-    if (mqMobile.matches) {
-      grid.classList.add(
-        'tariff-animate-ready',
-        'tariff-filled-animate-ready',
-        'tariff-second-visible'
-      );
-      return;
-    }
-
-    tariffObserver = new IntersectionObserver(
-      (entries, obs) => {
-        const entry = entries && entries[0];
-        if (!entry || !entry.isIntersecting) return;
-        grid.classList.add('tariff-animate-ready');
-        obs.unobserve(grid);
-        disconnectTariffObserver();
-
-        secondCardTimer = window.setTimeout(() => {
-          secondCardTimer = null;
-          grid.classList.add('tariff-second-visible', 'tariff-filled-animate-ready');
-        }, SECOND_CARD_SHOW_DELAY_MS);
-      },
-      { threshold: 0.12, rootMargin: '0px 0px -10% 0px' }
-    );
-
-    tariffObserver.observe(grid);
-  }
-
-  setupTariffInView();
-
-  mqMobile.addEventListener('change', () => {
-    setupTariffInView();
-  });
-
-  mqReduce.addEventListener('change', () => {
-    if (mqReduce.matches) {
-      clearSecondCardTimer();
-      disconnectTariffObserver();
-      grid.classList.add(
-        'tariff-animate-ready',
-        'tariff-filled-animate-ready',
-        'tariff-second-visible'
-      );
-    } else {
-      setupTariffInView();
-    }
-  });
-});
-
