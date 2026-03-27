@@ -596,14 +596,6 @@ h3 { font-weight: normal; font-size: 1.05rem; }
 .after-law-dark .section-sub { color: var(--sand-80); }
 .after-law-dark a { color: var(--sand); }
 
-.after-law-dark .owner-section,
-.after-law-dark .stats-showcase-section,
-.after-law-dark .team-section,
-.after-law-dark .pricing-section,
-.after-law-dark .cta-section{
-  background: transparent;
-}
-
 .risk-section { background: transparent; }
 
 .risk-cards {
