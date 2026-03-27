@@ -596,7 +596,7 @@ h3 { font-weight: normal; font-size: 1.05rem; }
 .after-law-dark .section-sub { color: var(--sand-80); }
 .after-law-dark a { color: var(--sand); }
 
-.risk-section { background: transparent; }
+.risk-section { background: #fff; }
 
 .risk-cards {
   display: grid;
@@ -628,7 +628,7 @@ h3 { font-weight: normal; font-size: 1.05rem; }
   font-size: 3.6rem;
   font-weight: 700;
   font-family: 'PlayfairDisplay', Arial, Helvetica, sans-serif;
-  color: var(--sand);
+  color: #111;
   text-transform: none;
   letter-spacing: 0.03em;
   line-height: 1;
@@ -638,17 +638,17 @@ h3 { font-weight: normal; font-size: 1.05rem; }
   font-size: 0.86rem;
   letter-spacing: 0;
   text-transform: none;
-  color: var(--sand-80);
+  color: var(--muted);
   line-height: 1.6;
   margin: -4px 0 4px;
 }
-.risk-card h3 { font-size: 1rem; font-weight: 500; margin: 0 0 8px; color: var(--sand); }
+.risk-card h3 { font-size: 1rem; font-weight: 500; margin: 0 0 8px; }
 .risk-fine {
   font-size: 0.82rem;
   font-weight: 700;
-  color: var(--sand);
-  background: rgba(234, 216, 184, 0.08);
-  border-left: 3px solid var(--sand);
+  color: #c62828;
+  background: rgba(198, 40, 40, 0.06);
+  border-left: 3px solid #c62828;
   padding: 6px 10px;
   border-radius: 0 4px 4px 0;
   margin-bottom: 4px;
@@ -657,7 +657,7 @@ h3 { font-weight: normal; font-size: 1.05rem; }
     0 10px 28px rgba(123, 26, 43, 0.06),
     0 2px 8px rgba(123, 26, 43, 0.04);
 }
-.risk-card p { font-size: 0.86rem; color: var(--sand-80); flex: 1; margin: 0; }
+.risk-card p { font-size: 0.86rem; color: var(--muted); flex: 1; margin: 0; }
 .risk-consequence {
   font-size: 0.84rem;
   font-weight: 500;
