@@ -1431,7 +1431,8 @@ async function onQuizWhatsAppCtaClick(e) {
     redirectToThankYouPage();
   } catch (err) {
     console.error(err);
-    alert('Заявка отправлена, мы свяжемся с вами!');
+    const msg = (err && err.message) ? err.message : 'Неизвестная ошибка';
+    alert(`Не удалось отправить заявку в Telegram.\n\n${msg}\n\nПроверьте интернет и попробуйте ещё раз.`);
   } finally {
     if (btn) {
       btn.disabled = false;
