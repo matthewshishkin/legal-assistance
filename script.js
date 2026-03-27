@@ -379,12 +379,12 @@ function updateHeaderGlassProgress() {
   const raw = (window.scrollY - start) / Math.max(1, end - start);
   const progress = clamp01(raw);
 
-  // 0%: чистый чёрный, без blur
-  // 100%: текущий стеклянный вид (rgba(0,0,0,0.62) + blur(10px))
-  const alpha = 1 - (1 - 0.62) * progress;
+  // 0%: плотный песочный без blur
+  // 100%: песочный "glass" с blur
+  const alpha = 1 - (1 - 0.86) * progress;
   const blur = 10 * progress;
 
-  header.style.background = `rgba(0, 0, 0, ${alpha.toFixed(3)})`;
+  header.style.background = `rgba(234, 216, 184, ${alpha.toFixed(3)})`;
   header.style.backdropFilter = `blur(${blur.toFixed(2)}px)`;
   header.style.webkitBackdropFilter = `blur(${blur.toFixed(2)}px)`;
 }
@@ -426,6 +426,7 @@ window.addEventListener('pageshow', updateHeaderCtaAfterSecondBlock);
   const tryPlayHero = () => {
     const v = document.querySelector('.hero-video');
     if (!v) return;
+    if (typeof v.play !== 'function') return;
     if (v.paused) {
       const p = v.play();
       if (p && typeof p.catch === 'function') p.catch(() => {});
