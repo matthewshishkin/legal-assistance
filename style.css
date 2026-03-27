@@ -1363,7 +1363,7 @@ blockquote {
 }
 
 .tariff-card--filled {
-  border: 1.5px solid #000;
+  border: none;
   background: var(--sand);
   color: #000;
   align-self: start;
