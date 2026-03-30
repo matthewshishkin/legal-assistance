@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css?v=253" />
+  <link rel="stylesheet" href="style.css?v=254" />
 </head>
 <body>
   <div id="siteLoadingOverlay" class="site-loading-overlay" aria-hidden="true">
@@ -134,7 +134,10 @@
               <div class="risk-bonus-meta" data-i18n="risk3_bonus_tag">Документ · PDF</div>
             </div>
             <div class="risk-bonus-preview" aria-hidden="true">
-              <img class="risk-bonus-preview-img" src="risk-pdf-preview.png" alt="" loading="lazy" decoding="async" />
+              <div class="risk-bonus-stack">
+                <img class="risk-bonus-preview-img risk-bonus-preview-img--back" src="risk-pdf-preview.png" alt="" loading="lazy" decoding="async" />
+                <img class="risk-bonus-preview-img risk-bonus-preview-img--front" src="risk-pdf-preview.png" alt="" loading="lazy" decoding="async" />
+              </div>
             </div>
           </div>
           <button class="risk-bonus-btn" type="button" onclick="openModal()" data-i18n="risk3_bonus_btn">Забрать PDF</button>
