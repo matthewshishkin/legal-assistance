@@ -1850,7 +1850,7 @@ blockquote {
   color: #c1272d;
   font-weight: 600;
 }
-.cta-sub        { color: var(--muted); margin-bottom: 20px; font-size: 0.97rem; }
+.cta-sub        { color: var(--muted); margin-bottom: 104px; font-size: 0.97rem; }
 
 /*
   CTA: бордовая кнопка и тень в тон бренду
@@ -1860,7 +1860,7 @@ blockquote {
   transform: none;
   left: auto;
   bottom: auto;
-  margin-top: 20px;
+  margin-top: 96px;
   display: inline-block;
   text-align: center;
   border-radius: 3px;
