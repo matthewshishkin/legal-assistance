@@ -909,7 +909,6 @@ function quizApplySelectedFromAnswers() {
   }
 
   // Шаг 3: блокировка «Свой вариант», если выбраны первые варианты
-  const a3 = answers[3];
   const firstVals = ['san_tax', 'suppliers', 'guests_hr'];
   const anyFirstSelected = Array.isArray(a3) && a3.some((v) => firstVals.includes(String(v)));
   const otherBtn = document.querySelector('.q-opt.multi[data-step="3"][data-val="other"]');
