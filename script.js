@@ -785,6 +785,10 @@ const answers = {};
 let lastProgressPercent = 0;
 
 /** Черновик квиза (шаги 1–6, форма) — для возврата с legal-страниц в новой вкладке */
+try {
+  document.documentElement.classList.add('js');
+} catch (_) {}
+
 const QUIZ_DRAFT_KEY = 'mainur_quiz_draft_v1';
 const QUIZ_DRAFT_MAX_AGE_MS = 1000 * 60 * 60 * 24; // 24 ч
 
@@ -981,7 +985,8 @@ function formatQuizAnswerForStep(step) {
     return raw
       .map((v) => {
         if (step === 3 && v === 'other') {
-          const detail = (answers['3_other'] || document.getElementById('q3OtherInput')?.value || '').trim();
+          const el = document.getElementById('q3OtherInput');
+          const detail = (answers['3_other'] || (el && el.value) || '').trim();
           if (detail) return kk ? `Өз нұсқа: ${detail}` : `Свой вариант: ${detail}`;
           return kk ? 'Өз нұсқа (көрсетілмеген)' : 'Свой вариант (не указано)';
         }
@@ -990,7 +995,8 @@ function formatQuizAnswerForStep(step) {
       .join(', ');
   }
   if (step === 1 && raw === 'other') {
-    const detail = (answers['1_other'] || document.getElementById('q1OtherInput')?.value || '').trim();
+    const el = document.getElementById('q1OtherInput');
+    const detail = (answers['1_other'] || (el && el.value) || '').trim();
     const kk = typeof window !== 'undefined' && window.SiteI18n && window.SiteI18n.getLang() === 'kk';
     if (detail) return kk ? `Басқа: ${detail}` : `Другое: ${detail}`;
     return kk ? 'Басқа (көрсетілмеген)' : 'Другое (не указано)';

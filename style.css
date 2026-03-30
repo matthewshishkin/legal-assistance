@@ -1787,12 +1787,14 @@ blockquote {
   padding: 60px 0; /* компактный последний блок */
 }
 
-.cta-anim {
+/* CTA animation: safe fallback if JS fails */
+.cta-anim { opacity: 1; transform: none; }
+.js .cta-anim {
   opacity: 0;
   transform: translateY(32px);
   transition: opacity 0.55s ease, transform 0.55s ease;
 }
-.cta-anim.animate-in {
+.js .cta-anim.animate-in {
   opacity: 1;
   transform: translateY(0);
 }
