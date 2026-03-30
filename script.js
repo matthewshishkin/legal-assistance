@@ -1,59 +1,359 @@
-/* =============================================
-   HEADER — стекло при скролле
-   ============================================= */
-window.addEventListener('scroll', () => {
-  const header = document.getElementById('siteHeader');
-  if (header) {
-    header.classList.toggle('scrolled', window.scrollY > 20);
-  }
-}, { passive: true });
+/* ES5-safe core runtime for animations + quiz.
+   Important: no arrow functions, no const/let, no async/await, no template literals. */
 
-/* =============================================
-   Image download on click (no preview)
-   ============================================= */
-document.addEventListener('DOMContentLoaded', () => {
-  const downloadImgs = document.querySelectorAll('.owner-img, .cta-img');
+(function () {
+  try { document.documentElement.classList.add('js'); } catch (e) {}
 
-  const downloadImage = async (src) => {
-    try {
-      // Скачиваем как blob, чтобы не открывать превью/картинку в браузере
-      const res = await fetch(src, { cache: 'no-store' });
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
+  function byId(id) { return document.getElementById(id); }
+  function qs(sel, root) { return (root || document).querySelector(sel); }
+  function qsa(sel, root) { return (root || document).querySelectorAll(sel); }
+  function trim(s) { return (s == null ? '' : String(s)).replace(/^\s+|\s+$/g, ''); }
 
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = src.split('/').pop() || 'image';
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-
-      // Отпускаем объект URL после старта скачивания
-      window.setTimeout(() => URL.revokeObjectURL(url), 1500);
-    } catch (_) {
-      // Фолбэк: если blob недоступен, откроем ссылку через download (в большинстве браузеров без предпросмотра)
-      const a = document.createElement('a');
-      a.href = src;
-      a.download = src.split('/').pop() || 'image';
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    }
-  };
-
-  downloadImgs.forEach((img) => {
-    if (!img) return;
-    img.style.cursor = 'pointer';
-    img.addEventListener('click', async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const src = img.currentSrc || img.src;
-      if (src) await downloadImage(src);
-    });
+  /* ---------- Header scrolled state ---------- */
+  window.addEventListener('scroll', function () {
+    var header = byId('siteHeader');
+    if (!header) return;
+    if (window.scrollY > 20) header.classList.add('scrolled');
+    else header.classList.remove('scrolled');
   });
-});
+
+  /* ---------- Simple scroll reveal (fallback for IntersectionObserver) ---------- */
+  function isInView(el) {
+    if (!el || !el.getBoundingClientRect) return false;
+    var r = el.getBoundingClientRect();
+    var vh = window.innerHeight || document.documentElement.clientHeight || 0;
+    return r.top <= vh * 0.82;
+  }
+  function revealTick() {
+    var i, el;
+    var law = qsa('.law-card');
+    for (i = 0; i < law.length; i++) {
+      el = law[i];
+      if (!el.classList.contains('animate-in') && isInView(el)) el.classList.add('animate-in');
+    }
+    var risk = qsa('.risk-card');
+    for (i = 0; i < risk.length; i++) {
+      el = risk[i];
+      if (!el.classList.contains('animate-in') && isInView(el)) el.classList.add('animate-in');
+    }
+    var cta = qsa('.cta-anim');
+    for (i = 0; i < cta.length; i++) {
+      el = cta[i];
+      if (!el.classList.contains('animate-in') && isInView(el)) el.classList.add('animate-in');
+    }
+    var stats = qsa('.stats-showcase-item');
+    for (i = 0; i < stats.length; i++) {
+      el = stats[i];
+      if (!el.classList.contains('is-visible') && isInView(el)) el.classList.add('is-visible');
+    }
+  }
+  function throttle(fn, ms) {
+    var t = 0;
+    return function () {
+      var now = Date.now ? Date.now() : +new Date();
+      if (now - t < ms) return;
+      t = now;
+      fn();
+    };
+  }
+  var onScrollReveal = throttle(revealTick, 120);
+  window.addEventListener('scroll', onScrollReveal);
+  window.addEventListener('resize', onScrollReveal);
+  document.addEventListener('DOMContentLoaded', function () { revealTick(); });
+
+  /* ---------- Quiz ---------- */
+  var TOTAL_STEPS = 5;
+  var currentStep = 1;
+  var answers = {}; // step -> string|array, and 1_other / 3_other
+
+  function showStep(n) {
+    var steps = qsa('.q-step');
+    var i;
+    for (i = 0; i < steps.length; i++) steps[i].classList.remove('active');
+    var el = byId('step' + n);
+    if (el) el.classList.add('active');
+    updateProgress(n);
+  }
+
+  function updateProgress(step) {
+    var txt = byId('quizProgressText');
+    var fill = byId('quizProgressFill');
+    if (!txt || !fill) return;
+    var total = TOTAL_STEPS + 1; // include contacts
+    var s = Math.max(1, Math.min(total, step));
+    var pct = Math.round((s / total) * 100);
+    txt.textContent = pct + '%';
+    fill.style.width = pct + '%';
+  }
+
+  function openModal() {
+    var modal = byId('quizModal');
+    if (!modal) return;
+    document.body.style.overflow = 'hidden';
+    modal.classList.add('open');
+    var screen = byId('quizFormScreen');
+    if (screen) screen.classList.remove('hidden');
+    var success = byId('quizSuccess');
+    if (success) success.classList.add('hidden');
+    currentStep = 1;
+    showStep(1);
+  }
+
+  function closeModal() {
+    var modal = byId('quizModal');
+    if (!modal) return;
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function prevStep() {
+    if (currentStep <= 1) { closeModal(); return; }
+    currentStep -= 1;
+    showStep(currentStep);
+  }
+
+  function validateStep(step) {
+    if (step === 1 && answers[1] === 'other') {
+      var inp1 = byId('q1OtherInput');
+      var t1 = inp1 ? trim(inp1.value) : '';
+      if (!t1) { if (inp1) inp1.focus(); return false; }
+      answers['1_other'] = t1;
+    }
+    if (step === 3) {
+      var a3 = answers[3];
+      if (a3 && a3.indexOf && a3.indexOf('other') !== -1) {
+        var inp3 = byId('q3OtherInput');
+        var t3 = inp3 ? trim(inp3.value) : '';
+        if (!t3) { if (inp3) inp3.focus(); return false; }
+        answers['3_other'] = t3;
+      }
+    }
+    // require any selection on steps 1..5
+    if (step >= 1 && step <= TOTAL_STEPS) {
+      var opts = qsa('.q-opt[data-step="' + step + '"]');
+      var any = false, i;
+      for (i = 0; i < opts.length; i++) if (opts[i].classList.contains('selected')) { any = true; break; }
+      if (!any && opts.length) { opts[0].focus(); return false; }
+    }
+    return true;
+  }
+
+  function nextStep() {
+    if (!validateStep(currentStep)) return;
+    currentStep += 1;
+    showStep(currentStep);
+  }
+
+  function applyStep3OtherDisabled() {
+    var firstVals = ['san_tax', 'suppliers', 'guests_hr'];
+    var a3 = answers[3] || [];
+    var i;
+    var anyFirst = false;
+    for (i = 0; i < a3.length; i++) if (firstVals.indexOf(String(a3[i])) !== -1) { anyFirst = true; break; }
+    var otherBtn = qs('.q-opt.multi[data-step="3"][data-val="other"]');
+    if (otherBtn) {
+      otherBtn.disabled = anyFirst;
+      otherBtn.setAttribute('aria-disabled', anyFirst ? 'true' : 'false');
+    }
+    if (anyFirst && a3.indexOf('other') !== -1) {
+      // remove other selection
+      answers[3] = [];
+      for (i = 0; i < a3.length; i++) if (String(a3[i]) !== 'other') answers[3].push(a3[i]);
+      if (otherBtn) otherBtn.classList.remove('selected');
+      var wrap = byId('q3OtherWrap');
+      var inp = byId('q3OtherInput');
+      if (wrap) wrap.classList.add('q-other-field--hidden');
+      if (inp) inp.value = '';
+      delete answers['3_other'];
+    }
+  }
+
+  function bindQuizOptions() {
+    var i, btn;
+    var singles = qsa('.q-opt.single');
+    for (i = 0; i < singles.length; i++) {
+      btn = singles[i];
+      btn.addEventListener('click', function (ev) {
+        var b = ev.currentTarget;
+        var step = b.getAttribute('data-step');
+        var val = b.getAttribute('data-val');
+        var group = qsa('.q-opt.single[data-step="' + step + '"]');
+        var j;
+        for (j = 0; j < group.length; j++) group[j].classList.remove('selected');
+        b.classList.add('selected');
+        answers[Number(step)] = val;
+
+        if (step === '1') {
+          var wrap1 = byId('q1OtherWrap');
+          var inp1 = byId('q1OtherInput');
+          if (val === 'other') {
+            if (wrap1) wrap1.classList.remove('q-other-field--hidden');
+            if (inp1) { inp1.value = ''; inp1.focus(); }
+            return; // no auto-advance until "Далее"
+          } else {
+            if (wrap1) wrap1.classList.add('q-other-field--hidden');
+            if (inp1) inp1.value = '';
+            delete answers['1_other'];
+          }
+        }
+
+        // auto-advance for single choice
+        window.setTimeout(function () { nextStep(); }, 250);
+      });
+    }
+
+    var multis = qsa('.q-opt.multi');
+    for (i = 0; i < multis.length; i++) {
+      btn = multis[i];
+      btn.addEventListener('click', function (ev) {
+        var b = ev.currentTarget;
+        var step = b.getAttribute('data-step');
+        var val = b.getAttribute('data-val');
+        if (b.disabled) return;
+        var st = Number(step);
+        if (!answers[st]) answers[st] = [];
+
+        if (b.classList.contains('selected')) {
+          b.classList.remove('selected');
+          var next = [];
+          var k;
+          for (k = 0; k < answers[st].length; k++) if (String(answers[st][k]) !== String(val)) next.push(answers[st][k]);
+          answers[st] = next;
+        } else {
+          b.classList.add('selected');
+          answers[st].push(val);
+        }
+
+        if (step === '3') {
+          var wrap3 = byId('q3OtherWrap');
+          var inp3 = byId('q3OtherInput');
+          var hasOther = answers[3].indexOf('other') !== -1;
+          if (hasOther) {
+            if (wrap3) wrap3.classList.remove('q-other-field--hidden');
+            if (val === 'other' && inp3) { inp3.value = ''; inp3.focus(); }
+          } else {
+            if (wrap3) wrap3.classList.add('q-other-field--hidden');
+            if (inp3) inp3.value = '';
+            delete answers['3_other'];
+          }
+          applyStep3OtherDisabled();
+        }
+      });
+    }
+
+    var q1Other = byId('q1OtherInput');
+    if (q1Other) q1Other.addEventListener('input', function () {
+      if (answers[1] === 'other') answers['1_other'] = trim(q1Other.value);
+    });
+    var q3Other = byId('q3OtherInput');
+    if (q3Other) q3Other.addEventListener('input', function () {
+      var a3 = answers[3] || [];
+      if (a3.indexOf && a3.indexOf('other') !== -1) answers['3_other'] = trim(q3Other.value);
+    });
+  }
+
+  function getStepTitle(step) {
+    var el = byId('step' + step);
+    if (!el) return 'Вопрос ' + step;
+    var h = el.getElementsByTagName('h3')[0];
+    return h ? trim(h.textContent) : ('Вопрос ' + step);
+  }
+  function getOptLabel(step, val) {
+    var opts = qsa('.q-opt[data-step="' + step + '"]');
+    var i;
+    for (i = 0; i < opts.length; i++) {
+      if (String(opts[i].getAttribute('data-val')) === String(val)) return trim(opts[i].textContent);
+    }
+    return String(val);
+  }
+  function formatAnswer(step) {
+    var raw = answers[step];
+    if (raw == null || raw === '') return '—';
+    if (Object.prototype.toString.call(raw) === '[object Array]') {
+      if (!raw.length) return '—';
+      var out = [];
+      var i;
+      for (i = 0; i < raw.length; i++) {
+        if (step === 3 && String(raw[i]) === 'other') {
+          var d = trim(answers['3_other']);
+          out.push(d ? ('Свой вариант: ' + d) : 'Свой вариант (не указано)');
+        } else out.push(getOptLabel(step, raw[i]));
+      }
+      return out.join(', ');
+    }
+    if (step === 1 && String(raw) === 'other') {
+      var d1 = trim(answers['1_other']);
+      return d1 ? ('Другое: ' + d1) : 'Другое (не указано)';
+    }
+    return getOptLabel(step, raw);
+  }
+
+  function buildTelegramText(form) {
+    var fd;
+    try { fd = new FormData(form); } catch (e) { fd = null; }
+    var name = fd ? trim(fd.get('name')) : '';
+    var phone = fd ? trim(fd.get('phone')) : '';
+    var city = fd ? trim(fd.get('city')) : '';
+    var lines = [];
+    lines.push('👤 Имя: ' + name);
+    lines.push('📞 Телефон: ' + phone);
+    lines.push('📍 Город: ' + city);
+    lines.push('');
+    var s;
+    for (s = 1; s <= TOTAL_STEPS; s++) {
+      lines.push(getStepTitle(s) + ': ' + formatAnswer(s));
+      lines.push('');
+    }
+    return lines.join('\n').replace(/\n\n\n+/g, '\n\n');
+  }
+
+  function validateContact(form) {
+    if (!form) return false;
+    var name = trim(form.querySelector('input[name="name"]').value);
+    var phone = trim(form.querySelector('input[name="phone"]').value);
+    var city = trim(form.querySelector('input[name="city"]').value);
+    if (!name || !phone || !city) return false;
+    var digits = phone.replace(/\D/g, '');
+    return digits.length >= 10;
+  }
+
+  function postJson(url, payload, cb) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState !== 4) return;
+      cb(xhr.status >= 200 && xhr.status < 300, xhr.responseText);
+    };
+    try { xhr.send(JSON.stringify(payload)); } catch (e) { cb(false, ''); }
+  }
+
+  function submitQuizLastStep(ev) {
+    if (ev && ev.preventDefault) ev.preventDefault();
+    var form = qs('.q-contact-form');
+    if (!validateContact(form)) return;
+    var text = buildTelegramText(form);
+    postJson('/api/send-telegram', { text: text }, function () {
+      var formScreen = byId('quizFormScreen');
+      var success = byId('quizSuccess');
+      if (formScreen) formScreen.classList.add('hidden');
+      if (success) success.classList.remove('hidden');
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    bindQuizOptions();
+    var btn = byId('quizWhatsAppCta');
+    if (btn) btn.addEventListener('click', submitQuizLastStep);
+  });
+
+  // Export globals for inline onclick
+  window.openModal = openModal;
+  window.closeModal = closeModal;
+  window.prevStep = prevStep;
+  window.nextStep = nextStep;
+  window.submitQuizLastStep = submitQuizLastStep;
+})();
 
 /* =============================================
    MONITORING CAROUSEL — свайп, drag мышью, автопрокрутка 2,2 с

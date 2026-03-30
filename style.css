@@ -524,13 +524,18 @@ h3 { font-weight: normal; font-size: 1.05rem; }
   padding: 32px 24px;
   background: #000;
   color: #fff;
-  opacity: 0;
-  transform: translateY(32px);          /* Desktop: fade-up */
+  opacity: 1;
+  transform: none;
   transition: opacity 0.55s ease, transform 0.55s ease;
   cursor: pointer;
   user-select: none;
   position: relative;
   overflow: hidden;
+}
+
+.js .law-card {
+  opacity: 0;
+  transform: translateY(32px);          /* Desktop: fade-up */
 }
 
 /* Десктоп: фиксированный размер карточек (без изменения при клике) */
@@ -539,7 +544,7 @@ h3 { font-weight: normal; font-size: 1.05rem; }
     height: 420px;
   }
 }
-.law-card.animate-in {
+.js .law-card.animate-in {
   opacity: 1;
   transform: translateY(0);
 }
@@ -635,13 +640,18 @@ h3 { font-weight: normal; font-size: 1.05rem; }
   display: flex;
   flex-direction: column;
   gap: 14px;
-  /* как во 2-м блоке: fade-up при появлении */
-  opacity: 0;
-  transform: translateY(32px);
+  /* visible without JS; fade-up only with .js */
+  opacity: 1;
+  transform: none;
   transition: opacity 0.55s ease, transform 0.55s ease;
 }
 
-.risk-card.animate-in {
+.js .risk-card {
+  opacity: 0;
+  transform: translateY(32px);
+}
+
+.js .risk-card.animate-in {
   opacity: 1;
   transform: translateY(0);
 }
@@ -1074,13 +1084,17 @@ blockquote {
   background: #fff;
   border-radius: 8px;
   padding: 28px 22px;
-  opacity: 0;
-  transform: translateY(14px);
+  opacity: 1;
+  transform: none;
   transition: opacity 0.325s ease, transform 0.325s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
+}
+.js .stats-showcase-item{
+  opacity: 0;
+  transform: translateY(14px);
 }
 .stats-showcase-item.is-visible{
   opacity: 1;
