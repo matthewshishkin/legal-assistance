@@ -3,7 +3,7 @@
  * Должен открываться: GET /api/send-telegram
  */
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+const TELEGRAM_CHAT_ID = '-1003786779381';
 
 function readJsonBody(req) {
   return new Promise((resolve, reject) => {
