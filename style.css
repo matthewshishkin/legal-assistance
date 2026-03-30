@@ -33,8 +33,22 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 /* Казахская локаль (lang=kk): явный LTR, чтобы не было смещения блоков из‑за bidi/направления */
-html  { scroll-behavior: smooth; font-size: 16px; direction: ltr; unicode-bidi: isolate; }
-body  { font-family: Arial, Helvetica, sans-serif; color: var(--text); background: #fff; line-height: 1.6; overflow-x: hidden; direction: ltr; }
+html  {
+  scroll-behavior: smooth;
+  font-size: 16px;
+  direction: ltr;
+  unicode-bidi: isolate;
+  overflow-x: hidden;
+}
+body  {
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--text);
+  background: #fff;
+  line-height: 1.6;
+  overflow-x: hidden;
+  direction: ltr;
+  position: relative;
+}
 img   { display: block; max-width: 100%; }
 a     { color: inherit; text-decoration: none; }
 
@@ -1280,18 +1294,18 @@ blockquote {
 }
 .team-section { background: #fff; }
 .team-section .section-title { margin-bottom: 40px; }
+/* Полная ширина без 100vw — иначе при скроллбаре и на iOS страница «уезжает» вбок */
 .team-photo-wrap {
   position: relative;
-  width: 100vw;
-  max-width: none;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
+  width: 100%;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: 0;
   margin-bottom: 0;
   height: 100vh;
   min-height: 520px;
   max-height: 980px;
   overflow: hidden;
-  /* Низ к чёрному блоку снизу без «белой щели» */
   background: #000;
   border-radius: 0;
 }
@@ -1312,6 +1326,7 @@ blockquote {
   background: #000000;
   padding: 0 0 60px;
   margin-top: 0;
+  overflow-x: hidden;
 }
 
 /* Верхний отступ только у контента — фото «Наша команда» вплотную к чёрному блоку */
