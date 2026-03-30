@@ -553,7 +553,29 @@
     </div>
   </div>
 
+  <script>
+    (function () {
+      // ES5 fallback: если основной скрипт не запустился, CTA всё равно откроет квиз.
+      if (typeof window.openModal === 'function') return;
+      function byId(id) { return document.getElementById(id); }
+      window.openModal = function () {
+        var modal = byId('quizModal');
+        if (!modal) return;
+        document.body.style.overflow = 'hidden';
+        modal.classList.add('open');
+        var formScreen = byId('quizFormScreen');
+        if (formScreen) formScreen.classList.remove('hidden');
+      };
+      window.closeModal = function () {
+        var modal = byId('quizModal');
+        if (!modal) return;
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+      };
+    })();
+  </script>
+
   <script src="i18n.js?v=29"></script>
-  <script src="script.js?v=82"></script>
+  <script src="script.js?v=83"></script>
 </body>
 </html>
