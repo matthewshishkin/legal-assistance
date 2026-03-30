@@ -753,7 +753,7 @@ h3 { font-weight: normal; font-size: 1.05rem; }
 .risk-bonus-preview-img{
   position: absolute;
   right: -28px;
-  bottom: -34px;
+  bottom: -50px;
   width: 206px;
   height: 254px;
   object-fit: cover;
@@ -802,7 +802,7 @@ h3 { font-weight: normal; font-size: 1.05rem; }
   .risk-bonus-preview{ height: 132px; }
   .risk-bonus-preview-img{
     right: -18px;
-    bottom: -22px;
+    bottom: -34px;
     width: 162px;
     height: 210px;
     transform: rotate(-8deg);
