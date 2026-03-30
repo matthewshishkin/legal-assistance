@@ -719,6 +719,7 @@ h3 { font-weight: normal; font-size: 1.05rem; }
   gap: 18px;
   align-items: center;
   box-shadow: 0 20px 52px rgba(0,0,0,0.22);
+  overflow: visible; /* документ выходит за границы как в референсе */
 }
 .risk-bonus-title{
   font-family: 'PlayfairDisplay', Arial, Helvetica, sans-serif;
@@ -742,30 +743,29 @@ h3 { font-weight: normal; font-size: 1.05rem; }
 /* Doc preview (real image) */
 .risk-bonus-preview{
   width: 100%;
-  aspect-ratio: 1 / 1;
-  border-radius: 6px;
-  background: #fff;
-  border: 1px solid rgba(255,255,255,0.22);
+  height: 156px;
+  border-radius: 0;
+  background: transparent;
+  border: none;
   position: relative;
-  overflow: hidden;
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+  overflow: visible;
 }
 .risk-bonus-preview-img{
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 18%;
-  display: block;
-  filter: contrast(1.03) saturate(0.95);
-}
-/* Dark vignette on the right like reference */
-.risk-bonus-preview::after{
-  content: "";
   position: absolute;
-  inset: 0;
-  background: linear-gradient(to left, rgba(0,0,0,0.40), rgba(0,0,0,0) 55%);
-  pointer-events: none;
-  opacity: 0.85;
+  right: -18px;
+  bottom: -22px;
+  width: 168px;
+  height: 206px;
+  object-fit: cover;
+  object-position: center 14%;
+  display: block;
+  background: #fff;
+  border-radius: 2px;
+  box-shadow:
+    0 22px 46px rgba(0,0,0,0.46),
+    0 10px 22px rgba(0,0,0,0.28);
+  transform: rotate(8deg);
+  filter: contrast(1.02) saturate(0.96);
 }
 
 .risk-bonus-btn{
@@ -799,6 +799,14 @@ h3 { font-weight: normal; font-size: 1.05rem; }
   .risk-bonus-title{ font-size: 1.15rem; } /* -15% */
   .risk-bonus-text{ font-size: 0.85rem; } /* -15% */
   .risk-card--tax .risk-tax-text{ max-height: 116px; }
+  .risk-bonus-preview{ height: 132px; }
+  .risk-bonus-preview-img{
+    right: -14px;
+    bottom: -18px;
+    width: 136px;
+    height: 176px;
+    transform: rotate(8deg);
+  }
   .risk-bonus-btn{
     width: 100%;
     margin-left: 0;
