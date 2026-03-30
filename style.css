@@ -722,20 +722,20 @@ h3 { font-weight: normal; font-size: 1.05rem; }
 }
 .risk-bonus-title{
   font-family: 'PlayfairDisplay', Arial, Helvetica, sans-serif;
-  font-size: 1.6rem;
+  font-size: 1.36rem; /* -15% */
   font-weight: 500;
   line-height: 1.05;
-  margin-bottom: 10px;
+  margin-bottom: 9px; /* keep proportions */
 }
 .risk-bonus-text{
-  font-size: 1.06rem;
+  font-size: 0.90rem; /* -15% */
   line-height: 1.25;
   font-weight: 300;
   color: rgba(255,255,255,0.92);
 }
 .risk-bonus-meta{
-  margin-top: 14px;
-  font-size: 0.86rem;
+  margin-top: 12px; /* keep proportions */
+  font-size: 0.73rem; /* -15% */
   color: rgba(255,255,255,0.58);
 }
 
@@ -802,8 +802,8 @@ h3 { font-weight: normal; font-size: 1.05rem; }
     padding: 16px 16px;
     border-radius: 12px;
   }
-  .risk-bonus-title{ font-size: 1.35rem; }
-  .risk-bonus-text{ font-size: 1rem; }
+  .risk-bonus-title{ font-size: 1.15rem; } /* -15% */
+  .risk-bonus-text{ font-size: 0.85rem; } /* -15% */
   .risk-card--tax .risk-tax-text{ max-height: 116px; }
   .risk-bonus-btn{
     width: 100%;
