@@ -3070,7 +3070,8 @@ a.q-submit-btn {
   /* CTA: компактнее по высоте (футер убран) */
   .cta-section {
     padding-top: 96px;
-    padding-bottom: 64px;
+    /* +1 высота CTA-кнопки по просьбе: добавить воздуха снизу на мобиле */
+    padding-bottom: 120px;
   }
   .hero--video      { margin-top: var(--header-h); min-height: calc(100vh - var(--header-h)); }
   .hero-content-wrap {
