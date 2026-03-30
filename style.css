@@ -722,9 +722,9 @@ h3 { font-weight: normal; font-size: 1.05rem; }
   overflow: visible; /* документ выходит за границы как в референсе */
 }
 .risk-bonus-title{
-  font-family: 'PlayfairDisplay', Arial, Helvetica, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   font-size: 1.24rem;
-  font-weight: 650;
+  font-weight: 700;
   line-height: 1.05;
   white-space: nowrap;
   letter-spacing: -0.01em;
