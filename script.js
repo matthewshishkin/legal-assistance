@@ -1267,6 +1267,16 @@ function closeModal() {
   document.getElementById('siteHeader').style.paddingRight = '';
 }
 
+// Inline onclick in HTML expects globals (Safari-safe).
+try {
+  window.openModal = openModal;
+  window.closeModal = closeModal;
+  window.openQuizContact = openQuizContact;
+  window.prevStep = prevStep;
+  window.nextStep = nextStep;
+  window.submitQuizLastStep = submitQuizLastStep;
+} catch (_) {}
+
 /**
  * Открыть квиз на шаге контактов (шаг 6).
  * @param {Event|null} e
