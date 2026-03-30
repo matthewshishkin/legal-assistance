@@ -3175,6 +3175,8 @@ a.q-submit-btn {
   .hero-subtitle {
     justify-content: flex-start;
     align-items: flex-start;
+    flex-direction: column;
+    flex-wrap: nowrap;
     width: 100%;
     margin-left: 0;
     margin-right: 0;
@@ -3192,10 +3194,10 @@ a.q-submit-btn {
     -webkit-backdrop-filter: blur(8px);
   }
 
-  /* Мобилка: «За 2 недели» строго под второй плашкой */
+  /* Мобилка: «За 2 недели» по ширине текста и слева */
   .hero-subtitle [data-i18n="hero_sub3"] {
-    flex: 0 0 100%;
     align-self: flex-start;
+    width: fit-content;
   }
 
   .hero-pill-emph {
