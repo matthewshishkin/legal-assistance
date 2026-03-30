@@ -3190,6 +3190,12 @@ a.q-submit-btn {
     -webkit-backdrop-filter: blur(8px);
   }
 
+  /* Мобилка: «За 2 недели» строго под второй плашкой */
+  .hero-subtitle [data-i18n="hero_sub3"] {
+    flex: 0 0 100%;
+    align-self: flex-start;
+  }
+
   .hero-pill-emph {
     font-weight: 500;
   }
