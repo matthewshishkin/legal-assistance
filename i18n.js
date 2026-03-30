@@ -173,7 +173,7 @@
       q_back: 'Назад',
       q_next: 'Далее',
       q_timer_label: '<span class="q-timer-accent">Сгорает</span>: <span class="q-timer-muted">PDF 11 актуальных штрафов 2026</span>',
-      q_timer_expired: 'Приоритет вашей заявке <span class="q-timer-accent">недоступен.</span><br>Ваша заявка будет обработа в порядке очереди.',
+      q_timer_expired: 'Бонус PDF 11 штрафов <span class="q-timer-accent">недоступен.</span>',
       q_submit: 'Выявить риски',
       q_ok_h: 'Заявка принята!',
       q_ok_p: 'Юрист свяжется с вами в&nbsp;течение 30&nbsp;минут',
