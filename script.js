@@ -1729,6 +1729,26 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* =============================================
+     SCROLL ANIMATIONS — CTA (title + subtitle)
+     ============================================= */
+  const ctaEls = document.querySelectorAll('.cta-anim');
+  if (ctaEls.length) {
+    const ctaObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        ctaObserver.unobserve(entry.target);
+        entry.target.classList.add('animate-in');
+      });
+    }, { threshold: 0.18, rootMargin: '0px 0px -40px 0px' });
+
+    ctaEls.forEach((el, idx) => {
+      // Небольшой каскад: заголовок, затем подзаголовок
+      el.style.transitionDelay = `${idx * 120}ms`;
+      ctaObserver.observe(el);
+    });
+  }
+
+  /* =============================================
      Telegram spoiler (canvas particles)
      ============================================= */
 
