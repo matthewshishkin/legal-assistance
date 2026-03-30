@@ -567,7 +567,8 @@ window.addEventListener('pageshow', updateHeaderCtaAfterSecondBlock);
     document.body.style.overflow = '';
 
     const v2 = document.querySelector('.hero-video');
-    if (v2) {
+    const isVideoEl = v2 && (v2.tagName === 'VIDEO' || typeof v2.play === 'function');
+    if (isVideoEl) {
       v2.loop = true;
       // На iOS/Android autoplay иногда требует повторных попыток.
       // Мы пробуем включить play несколько раз, пока не появится состояние "playing".
@@ -630,7 +631,8 @@ window.addEventListener('pageshow', updateHeaderCtaAfterSecondBlock);
     // Не трогаем видео принудительно: полагаемся на autoplay (muted + playsinline).
     // На некоторых моб. браузерах принудительная pause может сломать autoplay до user-gesture.
     const v = document.querySelector('.hero-video');
-    if (v) {
+    const isHeroVideo = v && (v.tagName === 'VIDEO' || typeof v.play === 'function');
+    if (isHeroVideo) {
       v.loop = true;
       v.muted = true;
       try { v.playsInline = true; } catch (_) {}
@@ -648,6 +650,10 @@ window.addEventListener('pageshow', updateHeaderCtaAfterSecondBlock);
         if (attempts < MAX_ATTEMPTS) window.setTimeout(tryPlay, RETRY_MS);
       };
       tryPlay();
+    } else {
+      // Hero — не видео (картинка). Не блокируем загрузку на "video"-части.
+      videoBuffered = true;
+      heroVideoPlaying = true;
     }
 
     // Images progress: не ждём lazy — они могут не грузиться до скролла и «вешают» прогресс на ~97%.
@@ -703,6 +709,7 @@ window.addEventListener('pageshow', updateHeaderCtaAfterSecondBlock);
 
     // Видео: буфер для %; «playing» — для снятия оверлея
     const v2 = document.querySelector('.hero-video');
+    const isVideoEl2 = v2 && (v2.tagName === 'VIDEO' || typeof v2.play === 'function');
 
     const markVideoBuffered = () => {
       if (videoBufFallbackId != null) {
@@ -726,7 +733,7 @@ window.addEventListener('pageshow', updateHeaderCtaAfterSecondBlock);
       }
     };
 
-    if (v2) {
+    if (isVideoEl2) {
       if (v2.readyState >= 2) {
         videoBuffered = true;
       }
