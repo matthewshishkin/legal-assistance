@@ -1491,6 +1491,7 @@ blockquote {
   max-width: 100%;
   max-height: min(52vh, 460px);
   border: 2px solid #111;
+  border-radius: 6px;
   box-sizing: border-box;
   display: block;
 }
