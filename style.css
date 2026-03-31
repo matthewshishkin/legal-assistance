@@ -765,7 +765,7 @@ h3 { font-weight: normal; font-size: 1.05rem; }
   color: rgba(255,255,255,0.92);
 }
 .risk-bonus-meta{
-  margin-top: 12px; /* keep proportions */
+  margin-top: calc(12px + 0.8em);
   font-size: 0.73rem; /* -15% */
   font-weight: 300;
   color: rgba(255,255,255,0.58);
