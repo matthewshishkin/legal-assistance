@@ -2329,9 +2329,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const nextBtn = root.querySelector('.certs-nav--next');
   const slides = Array.from(track.querySelectorAll('.certs-slide'));
   const mqReduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const AUTOPLAY_MS = 1500;
 
   let index = 0;
   let slideW = 0;
+  let autoplayTimer = null;
 
   function isStatic() {
     return mqReduce.matches;
@@ -2391,6 +2393,21 @@ document.addEventListener('DOMContentLoaded', () => {
     applyTransform();
   }
 
+  function stopAutoplay() {
+    if (autoplayTimer != null) {
+      window.clearInterval(autoplayTimer);
+      autoplayTimer = null;
+    }
+  }
+
+  function startAutoplay() {
+    stopAutoplay();
+    if (isStatic() || slides.length < 2) return;
+    autoplayTimer = window.setInterval(() => {
+      goTo((index + 1) % slides.length);
+    }, AUTOPLAY_MS);
+  }
+
   function openCertViewer(pdfSrc) {
     if (!modal || !iframe) return;
     iframe.title = legitModalTitle();
@@ -2439,10 +2456,12 @@ document.addEventListener('DOMContentLoaded', () => {
   mqReduce.addEventListener('change', () => {
     root.classList.toggle('certs-carousel--static', isStatic());
     measure();
+    startAutoplay();
   });
 
   window.addEventListener('resize', measure, { passive: true });
   measure();
+  startAutoplay();
 
   let tx0 = 0;
   let tActive = false;
@@ -2450,6 +2469,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'touchstart',
     (e) => {
       if (isStatic()) return;
+      stopAutoplay();
       tActive = true;
       tx0 = e.touches[0].clientX;
     },
@@ -2461,9 +2481,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!tActive || isStatic()) return;
       tActive = false;
       const dx = e.changedTouches[0].clientX - tx0;
-      if (Math.abs(dx) < 48) return;
-      if (dx < 0) goTo(index + 1);
-      else goTo(index - 1);
+      if (Math.abs(dx) >= 48) {
+        if (dx < 0) goTo(index + 1);
+        else goTo(index - 1);
+      }
+      startAutoplay();
     },
     { passive: true }
   );
