@@ -1539,7 +1539,7 @@ blockquote {
   margin-top: -2px;
 }
 .certs-dots {
-  display: flex;
+  display: none;
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
